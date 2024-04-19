@@ -1,6 +1,7 @@
 import { Socket } from "dgram";
 import { addOnlineUser } from "../socketSlice";
 import SocketClient from "@/socket/socketClient";
+import { RootState } from "../store";
 
 export const socketMiddleware =
     (socket: SocketClient) =>
@@ -10,11 +11,18 @@ export const socketMiddleware =
         switch (action.type) {
             // Connect to the socket when a user logs in
             case "socket/connect": {
-                console.log(socket.socket);
-
+                next(action); //for debugging purpose
                 socket.connect();
-                console.log(socket.socket);
+                socket.on("online users", (data: any) => {
+                    console.log(data);
+                });
+                socket.emit("connection data", {
+                    email: (getState() as RootState).user.email,
+                });
 
+                socket.on("message", (data) => {
+                    console.log(data);
+                });
                 // Set up all the socket event handlers
                 // When these events are received from the socket, they'll dispatch the proper Redux action
 
@@ -52,6 +60,16 @@ export const socketMiddleware =
                 break;
             }
 
+            case "socket/disconnect": {
+                socket.disconnect();
+                break;
+            }
+
+            case "messages/sendMessage": {
+                socket.emit("send message", action.payload);
+                break;
+            }
+
             // Telling the sever that this user is typing...
             case "users/sendThisUserIsTyping": {
                 socket.emit("typing...", payload);
@@ -67,17 +85,9 @@ export const socketMiddleware =
             }
 
             // Disconnect from the socket when a user logs out
-            case "users/logout": {
-                socket.disconnect();
 
-                break;
-            }
             // Let the server be the source of truth for all messages; don't dispatch anything
-            case "messages/sendMessage": {
-                socket.emit("send message", payload);
 
-                return;
-            }
             default:
                 next(action);
         }

@@ -19,6 +19,11 @@ function Profile() {
         dispatch({
             type: "socket/connect",
         });
+        return () => {
+            dispatch({
+                type: "socket/disconnect",
+            });
+        };
     }, [userData.email]);
     return (
         <div className="profile-container">

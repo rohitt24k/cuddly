@@ -56,7 +56,7 @@ app.get("/chat/:sessionId", (req, res, next) => {
 app.use("/api", router);
 
 //use authenticated middleware
-// app.use(authenticateUser); //**************************** */
+app.use(authenticateUser); //**************************** */
 
 app.use("/api", authRouter);
 app.use("/api/userchat", userChatRouter);

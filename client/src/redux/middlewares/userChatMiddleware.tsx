@@ -62,8 +62,21 @@ export const userChatMiddleware: Middleware =
                             id: Date.now(),
                         })
                     );
+                    //also send the message to the other user
                     const interData =
                         userChatData.chats[userChatData.index].users;
+
+                    const otherUser = interData.find(
+                        (d) => d.userId !== userData.email
+                    );
+                    // console.log(otherUser);
+                    store.dispatch({
+                        type: "messages/sendMessage",
+                        payload: {
+                            message: (action as any).payload,
+                            userId: otherUser.userId,
+                        },
+                    });
                     const response = await axios.post(
                         "http://localhost:5000/api/userchat/sendmessage",
                         {
